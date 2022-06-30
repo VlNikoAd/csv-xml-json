@@ -9,9 +9,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
         String fileNameCSV = "data.csv";
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String fileName2 = "JsonData.json";
@@ -76,56 +78,26 @@ public class Main {
         }
     }
 
-    public static List<Employee> parseXML(String fileNameXML) throws RuntimeException {
+    public static List<Employee> parseXML(String fileNameXML) throws RuntimeException, ParserConfigurationException, IOException, SAXException {
         List<Employee> list = new ArrayList<>();
-        try{
-            File file = new File(fileNameXML);
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(file);
-            Node root = doc.getDocumentElement();
-            NodeList nodeList = root.getChildNodes();
-            for (int i = 0; i < nodeList.getLength() ; i++) {
 
-                Node node = nodeList.item(i);
-                if (Node.ELEMENT_NODE == node.getNodeType()){
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(new File(fileNameXML));
 
-                    Element employee = (Element) node;
-                    NodeList fElId = employee.getElementsByTagName("id");
-                    Element fElement = (Element) fElId.item(0);
-                    NodeList fValue = fElement.getChildNodes();
-                    String iD = fValue.item(0).getNodeValue();
-
-                    Element employee1 = (Element) node;
-                    NodeList sElFirstName = employee1.getElementsByTagName("firstName");
-                    Element sElement = (Element) sElFirstName.item(0);
-                    NodeList sValue = sElement.getChildNodes();
-                    String firstName = sValue.item(0).getNodeValue();
-
-                    Element employee2 = (Element) node;
-                    NodeList thElLastName = employee2.getElementsByTagName("lastName");
-                    Element thElement = (Element) thElLastName.item(0);
-                    NodeList thValue = thElement.getChildNodes();
-                    String lastName = thValue.item(0).getNodeValue();
-
-                    Element employee3 = (Element) node;
-                    NodeList fCountry = employee3.getElementsByTagName("country");
-                    Element fourCountry = (Element) fCountry.item(0);
-                    NodeList fourValue = fourCountry.getChildNodes();
-                    String country = fourValue.item(0).getNodeValue();
-
-                    Element employee4 = (Element) node;
-                    NodeList fAge = employee4.getElementsByTagName("age");
-                    Element fiveAge = (Element) fAge.item(0);
-                    NodeList fiveValue = fiveAge.getChildNodes();
-                    String age = fiveValue.item(0).getNodeValue();
-
-                    Employee employee5 = new Employee( Long.parseLong(iD),firstName,lastName,country,Integer.parseInt(age));
-                    list.add(employee5);
-                }
+        Node staff = doc.getDocumentElement();
+        NodeList employee = staff.getChildNodes();
+        for (int i = 0; i < employee.getLength(); i++) {
+            Node node = employee.item(i);
+            if (Node.ELEMENT_NODE == node.getNodeType()) {
+                Element element = (Element) node;
+                list.add(new Employee
+                        (Long.parseLong(element.getElementsByTagName("id").item(0).getTextContent()),
+                                element.getElementsByTagName("firstName").item(0).getTextContent(),
+                                element.getElementsByTagName("lastName").item(0).getTextContent(),
+                                element.getElementsByTagName("country").item(0).getTextContent(),
+                                Integer.parseInt(element.getElementsByTagName("age").item(0).getTextContent())));
             }
-        } catch (Exception e) {
-            System.out.println(e);
         }
         return list;
     }
